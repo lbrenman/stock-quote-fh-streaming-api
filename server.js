@@ -6,18 +6,26 @@ require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const API_KEY = process.env.FINNHUBAPIKEY;
+const API_KEY = process.env.FINNHUBAPIKEY; // Finnhub API Key
 // const stockquoteFetchInterval = 5000;
-const stockquoteFetchInterval = 50000;
+const stockquoteFetchInterval = process.env.SSE_UPDATE_INTERVAL;
+
+const AUTH_API_KEY = process.env.USER_API_KEY;  // Front end API Key
 
 app.get('/quote-stream', async (req, res) => {
     const symbol = req.query.symbol;
 
-    const quoteUrl = `https://finnhub.io/api/v1/quote?symbol=${symbol}`;
+    const clientApiKey = req.headers['x-api-key'];
+
+    if (!clientApiKey || clientApiKey !== AUTH_API_KEY) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
 
     if (!symbol) {
         return res.status(400).json({ error: 'Symbol query parameter is required' });
     }
+
+    const quoteUrl = `https://finnhub.io/api/v1/quote?symbol=${symbol}`;
 
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
@@ -48,10 +56,10 @@ app.get('/quote-stream', async (req, res) => {
             res.write(JSON.stringify(quoteResponseBody));
 
             // Schedule the next stock quote fetch
-            setTimeout(sendStockQuote, 5000); // Adjust the interval as needed
+            setTimeout(sendStockQuote, stockquoteFetchInterval); // Adjust the interval as needed
         } catch (error) {
             res.write(`data: ${JSON.stringify({ error: 'Failed to fetch stock quote', details: error.message })}\n\n`);
-            setTimeout(sendStockQuote, 5000); // Retry after a delay in case of an error
+            setTimeout(sendStockQuote, stockquoteFetchInterval); // Retry after a delay in case of an error
         }
     };
 
