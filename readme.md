@@ -1,3 +1,3 @@
 # Server Side Event Stock Quote API
 
-A sample SSE API for a stock quote API using Finnhub
+A sample SSE API for a stock quote API using Finnhub Stock Quote API.
