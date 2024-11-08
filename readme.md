@@ -4,7 +4,7 @@ A sample SSE API for a stock quote API using Finnhub Stock Quote API.
 
 Run using:
 ```bash
-`node server.js`
+node server.js
 ```
 
 Call API using curl:
